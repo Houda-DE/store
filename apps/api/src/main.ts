@@ -7,10 +7,13 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Store API')
-    .setDescription('Complete authentication system with email verification')
+    .setDescription('Bazardz marketplace API')
     .setVersion('1.0')
     .addBearerAuth()
     .addTag('Authentication', 'User registration, login, and email verification')
+    .addTag('Users', 'Current user profile management')
+    .addTag('Locations', 'Countries and cities for location selection')
+    .addTag('Items', 'Marketplace item listings')
     .build();
 
   const document = SwaggerModule.createDocument(app, config);

@@ -17,6 +17,8 @@ export class UsersService {
       .select({
         id: users.id,
         email: users.email,
+        role: users.role,
+        cityId: users.cityId,
         isVerified: users.isVerified,
         createdAt: users.createdAt,
       })

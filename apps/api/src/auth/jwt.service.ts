@@ -5,6 +5,7 @@ import { ConfigService } from '@nestjs/config';
 export interface JwtPayload {
   sub: string;
   email: string;
+  role: 'seller' | 'customer';
   iat?: number;
   exp?: number;
 }
@@ -16,10 +17,11 @@ export class CustomJwtService {
     private readonly configService: ConfigService,
   ) {}
 
-  async generateAccessToken(userId: string, email: string): Promise<string> {
+  async generateAccessToken(userId: string, email: string, role: 'seller' | 'customer'): Promise<string> {
     const payload: JwtPayload = {
       sub: userId,
       email,
+      role,
     };
 
     const secret = this.configService.get('JWT_SECRET');

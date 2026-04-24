@@ -39,8 +39,18 @@ export class AuthController {
           example: 'securePassword123',
           description: 'Password must be at least 8 characters',
         },
+        cityId: {
+          type: 'integer',
+          example: 3,
+          description: 'ID of the city the user lives in (from /locations/countries/:id/cities)',
+        },
+        role: {
+          type: 'string',
+          enum: ['seller', 'customer'],
+          example: 'customer',
+        },
       },
-      required: ['email', 'password'],
+      required: ['email', 'password', 'cityId', 'role'],
     },
   })
   @ApiResponse({

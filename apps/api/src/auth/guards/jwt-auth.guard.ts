@@ -27,6 +27,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       request.user = {
         id: payload.sub,
         email: payload.email,
+        role: payload.role,
       };
 
       return true;

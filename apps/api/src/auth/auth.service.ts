@@ -44,6 +44,8 @@ export class AuthService {
       id: userId,
       email: input.email,
       password: hashedPassword,
+      role: input.role,
+      cityId: input.cityId,
       isVerified: false,
       emailVerificationToken,
       emailVerificationExpires,
@@ -140,6 +142,7 @@ export class AuthService {
     const accessToken = await this.jwtService.generateAccessToken(
       userRecord.id,
       userRecord.email,
+      userRecord.role,
     );
 
     const {

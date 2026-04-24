@@ -6,6 +6,8 @@ import { DatabaseModule } from './db/database.module';
 import { AuthModule } from './auth/auth.module';
 import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
+import { LocationsModule } from './locations/locations.module';
+import { ItemsModule } from './items/items.module';
 
 @Module({
   imports: [
@@ -16,6 +18,8 @@ import { UsersModule } from './users/users.module';
     EmailModule,
     AuthModule,
     UsersModule,
+    LocationsModule,
+    ItemsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

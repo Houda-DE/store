@@ -36,6 +36,15 @@ export class UsersController {
           example: 'user@example.com',
           description: 'User email address',
         },
+        role: {
+          type: 'string',
+          enum: ['seller', 'customer'],
+          example: 'customer',
+        },
+        cityId: {
+          type: 'integer',
+          example: 3,
+        },
         isVerified: {
           type: 'boolean',
           example: true,
@@ -96,6 +105,16 @@ export class UsersController {
           example: 'newemail@example.com',
           description: 'New email address (optional)',
         },
+        cityId: {
+          type: 'integer',
+          example: 5,
+          description: 'New city ID (optional)',
+        },
+        role: {
+          type: 'string',
+          enum: ['seller', 'customer'],
+          description: 'New role (optional)',
+        },
       },
     },
   })
@@ -113,6 +132,12 @@ export class UsersController {
           type: 'string',
           example: 'newemail@example.com',
         },
+        role: {
+          type: 'string',
+          enum: ['seller', 'customer'],
+          example: 'customer',
+        },
+        cityId: { type: 'integer', example: 3 },
         isVerified: {
           type: 'boolean',
           example: true,
