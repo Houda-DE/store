@@ -20,8 +20,10 @@
     "test:e2e": "jest --config ./test/jest-e2e.json --runInBand",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
-    "db:seed": "ts-node -r tsconfig-paths/register src/db/seed.ts",
-    "db:seed-users": "ts-node -r tsconfig-paths/register src/db/seed-users.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register src/db/seed.ts && ts-node -r tsconfig-paths/register src/db/seed-users.ts && ts-node -r tsconfig-paths/register src/db/seed-items.ts",
+    "db:seed-locations": "ts-node -r tsconfig-paths/register src/db/seed.ts",
+    "db:seed-users": "ts-node -r tsconfig-paths/register src/db/seed-users.ts",
+    "db:seed-items": "ts-node -r tsconfig-paths/register src/db/seed-items.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
