@@ -1,0 +1,54 @@
+.item-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: pointer;
+}
+
+.item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+}
+
+.item-card-img-wrap {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #f0f0eb;
+}
+
+.item-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s;
+}
+
+.item-card:hover .item-card-img {
+  transform: scale(1.03);
+}
+
+.item-card-body {
+  padding: 8px 10px 10px;
+}
+
+.item-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  margin: 0 0 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-card-price {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111;
+  margin: 0;
+}

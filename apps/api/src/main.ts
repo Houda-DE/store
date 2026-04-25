@@ -7,7 +7,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Store API')
-    .setDescription('Bazardz marketplace API')
+    .setDescription('WeStore marketplace API')
     .setVersion('1.0')
     .addBearerAuth()
     .addTag('Authentication', 'User registration, login, and email verification')

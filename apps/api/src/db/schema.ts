@@ -34,11 +34,11 @@ export const items = mysqlTable('items', {
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
-export const itemDeliveryCities = mysqlTable('item_delivery_cities', {
-  itemId: int('item_id').notNull().references(() => items.id, { onDelete: 'cascade' }),
+export const sellerDeliveryCities = mysqlTable('seller_delivery_cities', {
+  sellerId: varchar('seller_id', { length: 36 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   cityId: int('city_id').notNull().references(() => cities.id),
 }, (table) => [
-  primaryKey({ columns: [table.itemId, table.cityId] }),
+  primaryKey({ columns: [table.sellerId, table.cityId] }),
 ]);
 
 export type Country = typeof countries.$inferSelect;

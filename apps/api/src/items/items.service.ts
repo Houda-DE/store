@@ -2,13 +2,12 @@ import {
   Injectable,
   Inject,
   NotFoundException,
-  BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
-import { eq, and, inArray, desc } from 'drizzle-orm';
+import { eq, and, desc } from 'drizzle-orm';
 import { CreateItemInput, UpdateItemInput } from '@repo/validation';
 import { DATABASE_CONNECTION } from '../db/database.module';
-import { items, itemDeliveryCities, cities, users } from '../db/schema';
+import { items, sellerDeliveryCities, cities, users } from '../db/schema';
 import { StorageService } from '../storage/storage.service';
 import { CurrentUserType } from '../auth/decorators/current-user.decorator';
 
@@ -24,8 +23,6 @@ export class ItemsService {
     input: CreateItemInput,
     file: Express.Multer.File,
   ) {
-    await this.validateDeliveryCities(user.id, input.deliveryCityIds);
-
     const imageUrl = await this.storage.uploadImage(file);
 
     const [inserted] = await this.db
@@ -39,24 +36,50 @@ export class ItemsService {
       })
       .$returningId();
 
-    await this.db.insert(itemDeliveryCities).values(
-      input.deliveryCityIds.map((cityId) => ({ itemId: inserted.id, cityId })),
-    );
-
     return this.findOne(inserted.id);
   }
 
-  async findAll(page = 1, limit = 20) {
+  async findAll(page = 1, limit = 20, callerId?: string, callerRole?: string) {
     const offset = (page - 1) * limit;
 
-    const rows = await this.db
+    if (callerRole === 'customer' && callerId) {
+      const [customer] = await this.db
+        .select({ cityId: users.cityId })
+        .from(users)
+        .where(eq(users.id, callerId))
+        .limit(1);
+
+      if (customer) {
+        return this.db
+          .select({
+            id: items.id,
+            sellerId: items.sellerId,
+            name: items.name,
+            description: items.description,
+            price: items.price,
+            imageUrl: items.imageUrl,
+            createdAt: items.createdAt,
+          })
+          .from(items)
+          .innerJoin(
+            sellerDeliveryCities,
+            and(
+              eq(sellerDeliveryCities.sellerId, items.sellerId),
+              eq(sellerDeliveryCities.cityId, customer.cityId),
+            ),
+          )
+          .orderBy(desc(items.createdAt))
+          .limit(limit)
+          .offset(offset);
+      }
+    }
+
+    return this.db
       .select()
       .from(items)
       .orderBy(desc(items.createdAt))
       .limit(limit)
       .offset(offset);
-
-    return rows;
   }
 
   async findOne(id: number) {
@@ -70,11 +93,11 @@ export class ItemsService {
 
     const deliveryCities = await this.db
       .select({ id: cities.id, name: cities.name })
-      .from(itemDeliveryCities)
-      .innerJoin(cities, eq(itemDeliveryCities.cityId, cities.id))
-      .where(eq(itemDeliveryCities.itemId, id));
+      .from(sellerDeliveryCities)
+      .innerJoin(cities, eq(sellerDeliveryCities.cityId, cities.id))
+      .where(eq(sellerDeliveryCities.sellerId, item.sellerId));
 
-    return { ...item, deliveryCities };
+    return { ...item, sellerDeliveryCities: deliveryCities };
   }
 
   async update(
@@ -90,30 +113,17 @@ export class ItemsService {
       .limit(1);
 
     if (!item) throw new NotFoundException('Item not found');
-    if (item.sellerId !== userId) throw new ForbiddenException('You do not own this item');
-
-    if (input.deliveryCityIds) {
-      await this.validateDeliveryCities(userId, input.deliveryCityIds);
-    }
+    if (item.sellerId !== userId)
+      throw new ForbiddenException('You do not own this item');
 
     const updateData: Record<string, unknown> = {};
     if (input.name !== undefined) updateData.name = input.name;
     if (input.description !== undefined) updateData.description = input.description;
     if (input.price !== undefined) updateData.price = String(input.price);
-
-    if (file) {
-      updateData.imageUrl = await this.storage.uploadImage(file);
-    }
+    if (file) updateData.imageUrl = await this.storage.uploadImage(file);
 
     if (Object.keys(updateData).length > 0) {
       await this.db.update(items).set(updateData).where(eq(items.id, id));
-    }
-
-    if (input.deliveryCityIds) {
-      await this.db.delete(itemDeliveryCities).where(eq(itemDeliveryCities.itemId, id));
-      await this.db.insert(itemDeliveryCities).values(
-        input.deliveryCityIds.map((cityId) => ({ itemId: id, cityId })),
-      );
     }
 
     return this.findOne(id);
@@ -127,42 +137,10 @@ export class ItemsService {
       .limit(1);
 
     if (!item) throw new NotFoundException('Item not found');
-    if (item.sellerId !== userId) throw new ForbiddenException('You do not own this item');
+    if (item.sellerId !== userId)
+      throw new ForbiddenException('You do not own this item');
 
     await this.db.delete(items).where(eq(items.id, id));
     return { message: 'Item deleted' };
-  }
-
-  private async validateDeliveryCities(userId: string, deliveryCityIds: number[]) {
-    const [seller] = await this.db
-      .select({ cityId: users.cityId })
-      .from(users)
-      .where(eq(users.id, userId))
-      .limit(1);
-
-    const [sellerCity] = await this.db
-      .select({ countryId: cities.countryId })
-      .from(cities)
-      .where(eq(cities.id, seller.cityId))
-      .limit(1);
-
-    const requestedCities = await this.db
-      .select({ id: cities.id, countryId: cities.countryId })
-      .from(cities)
-      .where(inArray(cities.id, deliveryCityIds));
-
-    const invalid = requestedCities.filter(
-      (c: { id: number; countryId: number }) => c.countryId !== sellerCity.countryId,
-    );
-
-    if (invalid.length > 0) {
-      throw new BadRequestException(
-        'All delivery cities must be within your country',
-      );
-    }
-
-    if (requestedCities.length !== deliveryCityIds.length) {
-      throw new BadRequestException('One or more delivery cities do not exist');
-    }
   }
 }

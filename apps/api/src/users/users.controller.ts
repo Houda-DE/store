@@ -1,11 +1,12 @@
-import { Controller, Get, Patch, Body, UseGuards, UsePipes } from '@nestjs/common';
+import { Controller, Get, Patch, Put, Body, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth, ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { SellerGuard } from '../common/guards/seller.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { CurrentUserType } from '../auth/decorators/current-user.decorator';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { UpdateUserSchema } from '@repo/validation';
-import type { UpdateUserInput } from '@repo/validation';
+import { UpdateUserSchema, UpdateDeliveryCitiesSchema } from '@repo/validation';
+import type { UpdateUserInput, UpdateDeliveryCitiesInput } from '@repo/validation';
 import { UsersService, PublicUser } from './users.service';
 
 @ApiTags('Users')
@@ -180,11 +181,58 @@ export class UsersController {
       },
     },
   })
-  @UsePipes(new ZodValidationPipe(UpdateUserSchema))
   async updateUser(
     @CurrentUser() user: CurrentUserType,
-    @Body() updateData: UpdateUserInput,
+    @Body(new ZodValidationPipe(UpdateUserSchema)) updateData: UpdateUserInput,
   ): Promise<PublicUser> {
     return this.usersService.updateUser(user.id, updateData);
+  }
+
+  @Get('me/delivery-cities')
+  @UseGuards(SellerGuard)
+  @ApiOperation({
+    summary: 'Get seller delivery cities',
+    description: 'Returns the cities the authenticated seller currently delivers to.',
+  })
+  @ApiResponse({
+    status: 200,
+    schema: { type: 'array', items: { type: 'object', properties: { id: { type: 'integer' }, name: { type: 'string' } } } },
+  })
+  @ApiResponse({ status: 403, description: 'Sellers only' })
+  getDeliveryCities(@CurrentUser() user: CurrentUserType) {
+    return this.usersService.getDeliveryCities(user.id);
+  }
+
+  @Put('me/delivery-cities')
+  @UseGuards(SellerGuard)
+  @ApiOperation({
+    summary: 'Set seller delivery cities',
+    description: 'Sellers only. Replaces the full list of cities the seller delivers to. All cities must be within the seller\'s country.',
+  })
+  @ApiBody({
+    schema: {
+      type: 'object',
+      required: ['cityIds'],
+      properties: {
+        cityIds: {
+          type: 'array',
+          items: { type: 'integer' },
+          example: [1, 3, 7],
+          description: 'IDs of cities within the seller\'s country',
+        },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 200,
+    schema: { type: 'object', properties: { cityIds: { type: 'array', items: { type: 'integer' } } } },
+  })
+  @ApiResponse({ status: 400, description: 'Invalid city IDs or cities outside seller country' })
+  @ApiResponse({ status: 403, description: 'Sellers only' })
+  updateDeliveryCities(
+    @CurrentUser() user: CurrentUserType,
+    @Body(new ZodValidationPipe(UpdateDeliveryCitiesSchema)) body: UpdateDeliveryCitiesInput,
+  ) {
+    return this.usersService.updateDeliveryCities(user.id, body.cityIds);
   }
 }

@@ -1,42 +1,54 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { randomUUID } from 'crypto';
 import { extname } from 'path';
 
+function validateJwt(key: string, label: string): void {
+  const parts = key.trim().split('.');
+  if (parts.length !== 3) {
+    throw new Error(`${label} is not a valid JWT (expected 3 dot-separated parts, got ${parts.length})`);
+  }
+  try {
+    const header = JSON.parse(Buffer.from(parts[0], 'base64url').toString('utf8'));
+    if (!header.alg) throw new Error('missing "alg" field');
+  } catch (e: any) {
+    throw new Error(`${label} has an invalid JWT header: ${e.message}`);
+  }
+}
+
 @Injectable()
 export class StorageService {
-  private readonly s3: S3Client;
+  private readonly supabase: SupabaseClient;
   private readonly bucket: string;
-  private readonly publicUrl: string;
 
   constructor(private readonly config: ConfigService) {
-    this.bucket = config.getOrThrow<string>('R2_BUCKET_NAME');
-    this.publicUrl = config.getOrThrow<string>('R2_PUBLIC_URL');
+    const url = config.getOrThrow<string>('SUPABASE_URL');
+    const key = config.getOrThrow<string>('SUPABASE_SERVICE_ROLE_KEY').trim();
 
-    this.s3 = new S3Client({
-      region: 'auto',
-      endpoint: `https://${config.getOrThrow('R2_ACCOUNT_ID')}.r2.cloudflarestorage.com`,
-      credentials: {
-        accessKeyId: config.getOrThrow<string>('R2_ACCESS_KEY_ID'),
-        secretAccessKey: config.getOrThrow<string>('R2_SECRET_ACCESS_KEY'),
-      },
-    });
+    validateJwt(key, 'SUPABASE_SERVICE_ROLE_KEY');
+
+    this.supabase = createClient(url, key);
+    this.bucket = config.getOrThrow<string>('SUPABASE_BUCKET');
   }
 
   async uploadImage(file: Express.Multer.File): Promise<string> {
     const ext = extname(file.originalname).toLowerCase() || '.jpg';
-    const key = `items/${randomUUID()}${ext}`;
+    const path = `items/${randomUUID()}${ext}`;
 
-    await this.s3.send(
-      new PutObjectCommand({
-        Bucket: this.bucket,
-        Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-      }),
-    );
+    const { error } = await this.supabase.storage
+      .from(this.bucket)
+      .upload(path, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false,
+      });
 
-    return `${this.publicUrl}/${key}`;
+    if (error) throw new Error(`Supabase upload failed: ${error.message}`);
+
+    const { data } = this.supabase.storage
+      .from(this.bucket)
+      .getPublicUrl(path);
+
+    return data.publicUrl;
   }
 }

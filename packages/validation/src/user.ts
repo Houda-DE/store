@@ -6,4 +6,11 @@ export const UpdateUserSchema = z.object({
   role: z.enum(['seller', 'customer']).optional(),
 });
 
+export const UpdateDeliveryCitiesSchema = z.object({
+  cityIds: z
+    .array(z.number().int().positive())
+    .min(1, 'At least one delivery city is required'),
+});
+
 export type UpdateUserInput = z.infer<typeof UpdateUserSchema>;
+export type UpdateDeliveryCitiesInput = z.infer<typeof UpdateDeliveryCitiesSchema>;

@@ -1,0 +1,151 @@
+.sell-page {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 24px 16px 48px;
+}
+
+.sell-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 28px 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+}
+
+.sell-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 24px;
+}
+
+.sell-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.form-error {
+  background: #fff0f0;
+  border: 1px solid #ffc8c8;
+  color: #c0392b;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.photo-drop {
+  aspect-ratio: 4 / 3;
+  border: 2px dashed #d0d0ca;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  background: #fafaf8;
+  transition: border-color 0.15s;
+}
+
+.photo-drop:hover {
+  border-color: #09B1BA;
+}
+
+.photo-drop--filled {
+  border-style: solid;
+  border-color: #e0e0da;
+}
+
+.photo-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: #aaa;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.photo-icon {
+  font-size: 32px;
+}
+
+.photo-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #444;
+}
+
+.form-input {
+  height: 44px;
+  padding: 0 12px;
+  border: 1.5px solid #e0e0da;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #111;
+  background: #fafaf8;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.form-input:focus {
+  border-color: #09B1BA;
+  background: #fff;
+}
+
+.form-textarea {
+  height: auto;
+  padding: 12px;
+  resize: vertical;
+}
+
+.price-input-wrap {
+  position: relative;
+}
+
+.price-suffix {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  font-weight: 600;
+  color: #888;
+  pointer-events: none;
+}
+
+.btn-primary {
+  height: 48px;
+  background: #09B1BA;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: #079aa2;
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

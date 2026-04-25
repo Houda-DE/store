@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post, Query, UsePipes } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UsePipes } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -103,6 +103,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'User login',
     description:

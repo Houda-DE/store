@@ -29,6 +29,7 @@ import { memoryStorage } from 'multer';
 import { ItemsService } from './items.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { SellerGuard } from '../common/guards/seller.guard';
+import { OptionalJwtGuard } from '../common/guards/optional-jwt.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import type { CurrentUserType } from '../auth/decorators/current-user.decorator';
 import { CreateItemSchema, UpdateItemSchema } from '@repo/validation';
@@ -66,13 +67,12 @@ const itemWithCitiesSchema = {
 const multipartItemBody = {
   schema: {
     type: 'object' as const,
-    required: ['image', 'name', 'description', 'price', 'deliveryCityIds'],
+    required: ['image', 'name', 'description', 'price'],
     properties: {
       image: { type: 'string' as const, format: 'binary', description: 'Item image (jpeg/png/webp/gif, max 5 MB)' },
       name: { type: 'string' as const, example: 'Vintage lamp' },
       description: { type: 'string' as const, example: 'Beautiful vintage lamp in great condition' },
       price: { type: 'number' as const, example: 2500 },
-      deliveryCityIds: { type: 'string' as const, example: '[1,3,7]', description: 'JSON array of city IDs within your country' },
     },
   },
 };
@@ -114,15 +114,23 @@ export class ItemsController {
   }
 
   @Get()
-  @ApiOperation({ summary: 'List all items', description: 'Public paginated feed of all marketplace listings.' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'List items',
+    description:
+      'Requires authentication. **Customers** see only items from sellers whose delivery region includes their city. **Sellers** see all items.',
+  })
   @ApiQuery({ name: 'page', required: false, type: 'integer', example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: 'integer', example: 20, description: 'Max 100' })
   @ApiResponse({ status: 200, description: 'Paginated list of items', schema: { type: 'array', items: itemSchema } })
+  @ApiResponse({ status: 401, description: 'Authentication required' })
   findAll(
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
+    @CurrentUser() user: CurrentUserType,
   ) {
-    return this.itemsService.findAll(page, Math.min(limit, 100));
+    return this.itemsService.findAll(page, Math.min(limit, 100), user.id, user.role);
   }
 
   @Get(':id')
@@ -149,7 +157,6 @@ export class ItemsController {
         name: { type: 'string', example: 'Updated lamp' },
         description: { type: 'string' },
         price: { type: 'number', example: 1999 },
-        deliveryCityIds: { type: 'string', example: '[1,3]', description: 'JSON array of city IDs' },
       },
     },
   })

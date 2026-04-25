@@ -1,0 +1,82 @@
+.navbar {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e4;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.navbar-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.navbar-logo {
+  font-size: 22px;
+  font-weight: 800;
+  color: #09B1BA;
+  text-decoration: none;
+  letter-spacing: -0.5px;
+}
+
+.navbar-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navbar-link {
+  color: #333;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.navbar-link:hover {
+  background: #f0f0eb;
+}
+
+.navbar-logout {
+  color: #666;
+}
+
+.btn-sell {
+  background: #09B1BA;
+  color: #fff;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.btn-sell:hover {
+  background: #079aa2;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #09B1BA;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+}
