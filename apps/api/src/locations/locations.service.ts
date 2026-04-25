@@ -1,4 +1,4 @@
-import { Injectable, Inject } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { DATABASE_CONNECTION } from '../db/database.module';
 import { countries, cities, Country, City } from '../db/schema';
@@ -17,5 +17,15 @@ export class LocationsService {
       .from(cities)
       .where(eq(cities.countryId, countryId))
       .orderBy(cities.name);
+  }
+
+  async getCityById(cityId: number): Promise<City> {
+    const [city] = await this.db
+      .select()
+      .from(cities)
+      .where(eq(cities.id, cityId))
+      .limit(1);
+    if (!city) throw new NotFoundException('City not found');
+    return city;
   }
 }

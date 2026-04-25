@@ -39,4 +39,13 @@ export class LocationsController {
   getCities(@Param('countryId', ParseIntPipe) countryId: number) {
     return this.locationsService.getCitiesByCountry(countryId);
   }
+
+  @Get('cities/:cityId')
+  @ApiOperation({ summary: 'Get a single city', description: 'Returns a city with its countryId.' })
+  @ApiParam({ name: 'cityId', type: 'integer', example: 3 })
+  @ApiResponse({ status: 200, description: 'City details', schema: citySchema })
+  @ApiResponse({ status: 404, description: 'City not found' })
+  getCityById(@Param('cityId', ParseIntPipe) cityId: number) {
+    return this.locationsService.getCityById(cityId);
+  }
 }

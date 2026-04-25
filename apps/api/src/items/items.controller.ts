@@ -130,7 +130,7 @@ export class ItemsController {
     @Query('limit', new DefaultValuePipe(20), ParseIntPipe) limit: number,
     @CurrentUser() user: CurrentUserType,
   ) {
-    return this.itemsService.findAll(page, Math.min(limit, 100), user.id, user.role);
+    return this.itemsService.findAll(page, Math.min(limit, 100), user.id);
   }
 
   @Get(':id')

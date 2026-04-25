@@ -1,0 +1,86 @@
+.convs-page {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.convs-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #111;
+  margin: 0 0 20px;
+}
+
+.convs-empty {
+  color: #888;
+  font-size: 14px;
+}
+
+.convs-loading {
+  padding: 40px 16px;
+  text-align: center;
+  color: #888;
+}
+
+.convs-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.convs-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #fff;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  border: 1.5px solid #e8e8e4;
+  transition: border-color 0.15s;
+}
+
+.convs-link:hover { border-color: #09B1BA; }
+.convs-link--unread { border-left: 4px solid #09B1BA; background: #f0fdfe; }
+
+.convs-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.convs-other {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+}
+
+.convs-item-name {
+  font-size: 12px;
+  color: #888;
+}
+
+.convs-preview {
+  font-size: 13px;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 400px;
+}
+
+.convs-unread-dot {
+  flex-shrink: 0;
+  background: #09B1BA;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 10px;
+}

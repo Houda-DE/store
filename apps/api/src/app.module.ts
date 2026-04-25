@@ -8,6 +8,7 @@ import { EmailModule } from './email/email.module';
 import { UsersModule } from './users/users.module';
 import { LocationsModule } from './locations/locations.module';
 import { ItemsModule } from './items/items.module';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ItemsModule } from './items/items.module';
     UsersModule,
     LocationsModule,
     ItemsModule,
+    ChatModule,
   ],
   controllers: [AppController],
   providers: [AppService],

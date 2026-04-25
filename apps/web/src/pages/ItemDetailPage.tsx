@@ -88,12 +88,23 @@ export function ItemDetailPage() {
                 {deleting ? 'Deleting…' : 'Delete'}
               </button>
             </div>
-          ) : (
+          ) : user ? (
             <div className="detail-cta">
               <p className="cta-note">Interested? Contact the seller to arrange payment and pickup.</p>
-              <div className="cta-badge">💬 Chat with seller</div>
+              <button
+                className="btn-message-seller"
+                onClick={async () => {
+                  const conv = await api.post<{ id: number }>('/chat/conversations', {
+                    sellerId: item.sellerId,
+                    itemId: item.id,
+                  });
+                  navigate(`/conversations/${conv.id}`);
+                }}
+              >
+                💬 Message seller
+              </button>
             </div>
-          )}
+          ) : null}
         </div>
       </div>
     </main>

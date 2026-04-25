@@ -159,17 +159,23 @@
   line-height: 1.5;
 }
 
-.cta-badge {
+.btn-message-seller {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  background: #fff;
-  border: 1.5px solid #e0e0da;
+  gap: 8px;
+  padding: 12px 20px;
+  background: #09B1BA;
+  color: #fff;
+  border: none;
   border-radius: 10px;
   font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-message-seller:hover {
+  background: #079aa2;
 }
 
 /* Skeleton */

@@ -1,4 +1,4 @@
-import { mysqlTable, varchar, boolean, timestamp, mysqlEnum, int, text, decimal, primaryKey } from 'drizzle-orm/mysql-core';
+import { mysqlTable, varchar, boolean, timestamp, mysqlEnum, int, text, decimal, primaryKey, uniqueIndex, index, foreignKey } from 'drizzle-orm/mysql-core';
 
 export const countries = mysqlTable('countries', {
   id: int('id').primaryKey().autoincrement(),
@@ -35,15 +35,42 @@ export const items = mysqlTable('items', {
 });
 
 export const sellerDeliveryCities = mysqlTable('seller_delivery_cities', {
-  sellerId: varchar('seller_id', { length: 36 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
-  cityId: int('city_id').notNull().references(() => cities.id),
+  sellerId: varchar('seller_id', { length: 36 }).notNull(),
+  cityId: int('city_id').notNull(),
 }, (table) => [
-  primaryKey({ columns: [table.sellerId, table.cityId] }),
+  primaryKey({ name: 'seller_delivery_cities_seller_id_city_id_pk', columns: [table.sellerId, table.cityId] }),
+  foreignKey({ name: 'seller_delivery_cities_seller_id_users_id_fk', columns: [table.sellerId], foreignColumns: [users.id] }).onDelete('cascade').onUpdate('no action'),
+  foreignKey({ name: 'seller_delivery_cities_city_id_cities_id_fk', columns: [table.cityId], foreignColumns: [cities.id] }).onDelete('no action').onUpdate('no action'),
 ]);
 
-export type Country = typeof countries.$inferSelect;
-export type City = typeof cities.$inferSelect;
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
-export type Item = typeof items.$inferSelect;
-export type InsertItem = typeof items.$inferInsert;
+export const conversations = mysqlTable('conversations', {
+  id:         int('id').primaryKey().autoincrement(),
+  customerId: varchar('customer_id', { length: 36 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  sellerId:   varchar('seller_id',   { length: 36 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  itemId:     int('item_id').notNull().references(() => items.id, { onDelete: 'cascade' }),
+  createdAt:  timestamp('created_at').defaultNow().notNull(),
+}, (t) => [
+  uniqueIndex('uq_conv').on(t.customerId, t.sellerId, t.itemId),
+  index('idx_conv_customer').on(t.customerId),
+  index('idx_conv_seller').on(t.sellerId),
+]);
+
+export const messages = mysqlTable('messages', {
+  id:             int('id').primaryKey().autoincrement(),
+  conversationId: int('conversation_id').notNull().references(() => conversations.id, { onDelete: 'cascade' }),
+  senderId:       varchar('sender_id', { length: 36 }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  body:           text('body').notNull(),
+  isRead:         boolean('is_read').default(false).notNull(),
+  createdAt:      timestamp('created_at').defaultNow().notNull(),
+}, (t) => [
+  index('idx_msg_conv').on(t.conversationId),
+]);
+
+export type Country      = typeof countries.$inferSelect;
+export type City         = typeof cities.$inferSelect;
+export type User         = typeof users.$inferSelect;
+export type InsertUser   = typeof users.$inferInsert;
+export type Item         = typeof items.$inferSelect;
+export type InsertItem   = typeof items.$inferInsert;
+export type Conversation = typeof conversations.$inferSelect;
+export type Message      = typeof messages.$inferSelect;

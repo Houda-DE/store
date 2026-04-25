@@ -68,6 +68,27 @@
   background: #079aa2;
 }
 
+.navbar-chat {
+  position: relative;
+  font-size: 18px;
+}
+
+.chat-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 4px;
+  border-radius: 10px;
+  min-width: 16px;
+  text-align: center;
+  line-height: 16px;
+  pointer-events: none;
+}
+
 .avatar {
   width: 32px;
   height: 32px;

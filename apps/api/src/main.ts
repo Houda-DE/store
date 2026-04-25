@@ -5,6 +5,11 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
+  app.enableCors({
+    origin: process.env.CLIENT_ORIGIN ?? 'http://localhost:5173',
+    credentials: true,
+  });
+
   const config = new DocumentBuilder()
     .setTitle('Store API')
     .setDescription('WeStore marketplace API')

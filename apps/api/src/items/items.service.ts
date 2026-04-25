@@ -39,17 +39,17 @@ export class ItemsService {
     return this.findOne(inserted.id);
   }
 
-  async findAll(page = 1, limit = 20, callerId?: string, callerRole?: string) {
+  async findAll(page = 1, limit = 20, callerId?: string) {
     const offset = (page - 1) * limit;
 
-    if (callerRole === 'customer' && callerId) {
-      const [customer] = await this.db
+    if (callerId) {
+      const [caller] = await this.db
         .select({ cityId: users.cityId })
         .from(users)
         .where(eq(users.id, callerId))
         .limit(1);
 
-      if (customer) {
+      if (caller?.cityId) {
         return this.db
           .select({
             id: items.id,
@@ -65,7 +65,7 @@ export class ItemsService {
             sellerDeliveryCities,
             and(
               eq(sellerDeliveryCities.sellerId, items.sellerId),
-              eq(sellerDeliveryCities.cityId, customer.cityId),
+              eq(sellerDeliveryCities.cityId, caller.cityId),
             ),
           )
           .orderBy(desc(items.createdAt))

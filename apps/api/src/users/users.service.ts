@@ -70,7 +70,7 @@ export class UsersService {
       .where(eq(cities.id, seller.cityId))
       .limit(1);
 
-    // All requested cities must belong to the seller's country
+    // All requested cities must exist
     const requestedCities = await this.db
       .select({ id: cities.id, countryId: cities.countryId })
       .from(cities)
@@ -80,11 +80,14 @@ export class UsersService {
       throw new BadRequestException('One or more cities do not exist');
     }
 
-    const invalid = requestedCities.filter(
-      (c: { id: number; countryId: number }) => c.countryId !== sellerCity.countryId,
-    );
-    if (invalid.length > 0) {
-      throw new BadRequestException('All delivery cities must be within your country');
+    // Validate country constraint only when seller's city is resolvable
+    if (sellerCity) {
+      const invalid = requestedCities.filter(
+        (c: { id: number; countryId: number }) => c.countryId !== sellerCity.countryId,
+      );
+      if (invalid.length > 0) {
+        throw new BadRequestException('All delivery cities must be within your country');
+      }
     }
 
     // Replace existing delivery cities

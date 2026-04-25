@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ChatProvider } from './context/ChatContext';
 import { Navbar } from './components/Navbar';
 import { DevLoginSwitcher } from './components/DevLoginSwitcher';
 import { LoginPage } from './pages/LoginPage';
@@ -9,6 +10,8 @@ import { ItemDetailPage } from './pages/ItemDetailPage';
 import { SellPage } from './pages/SellPage';
 import { EditItemPage } from './pages/EditItemPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ConversationsPage } from './pages/ConversationsPage';
+import { ChatPage } from './pages/ChatPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -39,6 +42,8 @@ function AppRoutes() {
         <Route path="/items/:id/edit" element={<RequireAuth><RequireSeller><EditItemPage /></RequireSeller></RequireAuth>} />
         <Route path="/sell" element={<RequireAuth><RequireSeller><SellPage /></RequireSeller></RequireAuth>} />
         <Route path="/profile" element={<RequireAuth><ProfilePage /></RequireAuth>} />
+        <Route path="/conversations" element={<RequireAuth><ConversationsPage /></RequireAuth>} />
+        <Route path="/conversations/:id" element={<RequireAuth><ChatPage /></RequireAuth>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
@@ -49,7 +54,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppRoutes />
+        <ChatProvider>
+          <AppRoutes />
+        </ChatProvider>
       </AuthProvider>
     </BrowserRouter>
   );

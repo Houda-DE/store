@@ -1,9 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useChat } from '../context/ChatContext';
 import './Navbar.css';
 
 export function Navbar() {
   const { user, logout } = useAuth();
+  const { totalUnread } = useChat();
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -22,6 +24,12 @@ export function Navbar() {
               {user.role === 'seller' && (
                 <Link to="/sell" className="btn-sell">+ Sell</Link>
               )}
+              <Link to="/conversations" className="navbar-link navbar-chat">
+                💬
+                {totalUnread > 0 && (
+                  <span className="chat-badge">{totalUnread > 99 ? '99+' : totalUnread}</span>
+                )}
+              </Link>
               <Link to="/profile" className="navbar-link">
                 <div className="avatar">{user.email[0].toUpperCase()}</div>
               </Link>

@@ -32,6 +32,9 @@ export function ProfilePage() {
       api.get<City[]>('/users/me/delivery-cities').then(c => {
         setDeliveryIds(c.map(x => x.id));
       });
+      api.get<City>(`/locations/cities/${user.cityId}`).then(city => {
+        if (city.countryId) setSelectedCountry(city.countryId);
+      });
     }
   }, [user]);
 
