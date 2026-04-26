@@ -113,10 +113,29 @@ After running `pnpm db:seed`, the following test accounts are available:
 
 ## Key features
 
-- **Browse & filter** — customers see only items whose sellers deliver to their city
-- **Sell** — sellers list items with photos (uploaded to Supabase Storage) and set delivery cities
-- **Real-time chat** — Socket.IO-powered messaging between buyer and seller, with typing indicators, unread badges and message history
-- **Email verification** — new accounts require email confirmation before login
+### Authentication & accounts
+- **Role-based registration** users sign up as either a **seller** or a **customer**, each with a distinct experience
+- **Email verification** a confirmation link is sent via Resend on registration; login is blocked until the email is verified
+- **JWT auth** stateless access tokens stored in localStorage, with expiry handled transparently by the API client
+
+### Marketplace & listings
+- **Item listings** sellers create listings with a name, description, price and a cover photo uploaded directly to Supabase Storage
+- **City-based delivery areas** sellers choose which cities they deliver to from their profile; this drives what customers see
+- **Filtered browsing** customers only see items from sellers who deliver to their city, keeping results relevant
+- **Item detail page** full view with image, price, description, delivery cities and a direct "Message seller" button
+- **Edit & delete** sellers can update or remove their own listings at any time
+
+### Seller profile
+- **Delivery area management** sellers pick their active delivery cities from a country → city selector; changes take effect immediately for browsing customers
+- **City auto-detection** the country dropdown pre-selects based on the seller's registered city so setup is friction-free
+
+### Real-time messaging
+- **Conversation per item** clicking "Message seller" on a listing creates (or reopens) a dedicated conversation tied to that specific item, so context is never lost
+- **Socket.IO delivery** messages appear instantly on both sides without any page refresh
+- **Typing indicator** animated dots appear when the other participant is composing a message
+- **Unread badge** the navbar chat icon shows a live count of unread messages across all conversations, updated in real time even while browsing other pages
+- **Message history** full conversation history is persisted in MySQL and loaded on open, with a "Load older" button for cursor-based pagination
+- **Conversations list** a dedicated `/conversations` page lists all threads with the other party's name, the item in question, last message preview and relative timestamps (e.g. "2h ago")
 
 ## Available scripts
 
