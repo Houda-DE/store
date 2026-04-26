@@ -6,6 +6,20 @@ import { useChat } from '../context/ChatContext';
 import type { Conversation, Message } from '../api/types';
 import './ChatPage.css';
 
+function formatTime(dateStr: string) {
+  return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatDateSep(dateStr: string) {
+  const d = new Date(dateStr);
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+  if (d.toDateString() === today.toDateString()) return 'Today';
+  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+  return d.toLocaleDateString([], { month: 'short', day: 'numeric', year: d.getFullYear() !== today.getFullYear() ? 'numeric' : undefined });
+}
+
 export function ChatPage() {
   const { id } = useParams<{ id: string }>();
   const convId = Number(id);
@@ -89,14 +103,35 @@ export function ChatPage() {
     }
   };
 
-  if (loading) return <div className="chat-loading">Loading…</div>;
+  const initials = conv?.otherEmail?.[0]?.toUpperCase() ?? '?';
+
+  // Group messages with date separators
+  const messageRows: Array<{ type: 'sep'; label: string } | { type: 'msg'; msg: Message }> = [];
+  let lastDate = '';
+  for (const msg of msgs) {
+    const d = new Date(msg.createdAt).toDateString();
+    if (d !== lastDate) {
+      messageRows.push({ type: 'sep', label: formatDateSep(msg.createdAt) });
+      lastDate = d;
+    }
+    messageRows.push({ type: 'msg', msg });
+  }
+
+  if (loading) {
+    return (
+      <main className="chat-page">
+        <div className="chat-loading">Loading…</div>
+      </main>
+    );
+  }
 
   return (
     <main className="chat-page">
       <div className="chat-header">
-        <Link to="/conversations" className="chat-back">← Back</Link>
+        <Link to="/conversations" className="chat-back">←</Link>
+        <div className="chat-avatar">{initials}</div>
         <div className="chat-header-info">
-          <span className="chat-header-other">{conv?.otherEmail}</span>
+          <span className="chat-header-name">{conv?.otherEmail ?? '—'}</span>
           {conv && <span className="chat-header-item">re: {conv.itemName}</span>}
         </div>
       </div>
@@ -105,18 +140,33 @@ export function ChatPage() {
         {hasMore && (
           <button className="chat-load-older" onClick={loadOlder}>Load older messages</button>
         )}
-        {msgs.map(msg => (
-          <div
-            key={msg.id}
-            className={`chat-bubble ${msg.senderId === user?.id ? 'chat-bubble--mine' : 'chat-bubble--theirs'}`}
-          >
-            <p className="chat-bubble-body">{msg.body}</p>
-            <span className="chat-bubble-time">
-              {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-            </span>
+
+        {msgs.length === 0 && (
+          <div className="chat-empty">
+            <div className="chat-empty-icon">💬</div>
+            <span>No messages yet. Say hello!</span>
           </div>
-        ))}
-        {isTyping && <div className="chat-typing">typing…</div>}
+        )}
+
+        {messageRows.map((row, i) =>
+          row.type === 'sep' ? (
+            <div key={`sep-${i}`} className="chat-date-sep">{row.label}</div>
+          ) : (
+            <div
+              key={row.msg.id}
+              className={`chat-bubble ${row.msg.senderId === user?.id ? 'chat-bubble--mine' : 'chat-bubble--theirs'}`}
+            >
+              <p className="chat-bubble-body">{row.msg.body}</p>
+              <span className="chat-bubble-time">{formatTime(row.msg.createdAt)}</span>
+            </div>
+          )
+        )}
+
+        {isTyping && (
+          <div className="chat-typing">
+            <span /><span /><span />
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
@@ -129,8 +179,8 @@ export function ChatPage() {
           placeholder="Type a message…"
           rows={1}
         />
-        <button className="chat-send" onClick={sendMessage} disabled={!input.trim()}>
-          Send
+        <button className="chat-send" onClick={sendMessage} disabled={!input.trim()} aria-label="Send">
+          ➤
         </button>
       </div>
     </main>

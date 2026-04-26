@@ -1,13 +1,24 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../api/client';
-import { useAuth } from '../context/AuthContext';
 import { useChat } from '../context/ChatContext';
 import type { Conversation } from '../api/types';
 import './ConversationsPage.css';
 
+function relativeTime(dateStr: string | null) {
+  if (!dateStr) return '';
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'just now';
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 7) return `${days}d ago`;
+  return new Date(dateStr).toLocaleDateString([], { month: 'short', day: 'numeric' });
+}
+
 export function ConversationsPage() {
-  const { user } = useAuth();
   const { socket } = useChat();
   const [convs, setConvs] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +42,12 @@ export function ConversationsPage() {
   return (
     <main className="convs-page">
       <h1 className="convs-title">Messages</h1>
+
       {convs.length === 0 ? (
-        <p className="convs-empty">No conversations yet. Browse items and message a seller to get started.</p>
+        <div className="convs-empty">
+          <div className="convs-empty-icon">💬</div>
+          <p>No conversations yet. Browse items and message a seller to get started.</p>
+        </div>
       ) : (
         <ul className="convs-list">
           {convs.map(conv => (
@@ -41,15 +56,21 @@ export function ConversationsPage() {
                 to={`/conversations/${conv.id}`}
                 className={`convs-link${conv.unreadCount > 0 ? ' convs-link--unread' : ''}`}
               >
-                <div className="convs-meta">
-                  <span className="convs-other">{conv.otherEmail}</span>
+                <div className="convs-avatar">{conv.otherEmail[0].toUpperCase()}</div>
+
+                <div className="convs-body">
+                  <div className="convs-top">
+                    <span className="convs-other">{conv.otherEmail}</span>
+                    <span className="convs-time">{relativeTime(conv.lastMessageAt)}</span>
+                  </div>
                   <span className="convs-item-name">re: {conv.itemName}</span>
                   {conv.lastMessageBody && (
                     <span className="convs-preview">{conv.lastMessageBody}</span>
                   )}
                 </div>
+
                 {conv.unreadCount > 0 && (
-                  <span className="convs-unread-dot">{conv.unreadCount}</span>
+                  <span className="convs-unread-dot">{conv.unreadCount > 99 ? '99+' : conv.unreadCount}</span>
                 )}
               </Link>
             </li>

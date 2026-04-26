@@ -1,159 +1,141 @@
-# Turborepo starter
+# westore
 
-This Turborepo starter is maintained by the Turborepo core team.
+A marketplace platform where sellers list items with delivery areas and customers browse items available in their city. Includes real-time messaging between buyers and sellers.
 
-## Using this example
+## Tech stack
 
-Run the following command:
+| Layer | Technology |
+|---|---|
+| Monorepo | Turborepo + pnpm workspaces |
+| API | NestJS 11, Drizzle ORM, MySQL |
+| Web | React 19, Vite, React Router |
+| Real-time | Socket.IO (`/chat` namespace) |
+| Auth | JWT (access token in localStorage) |
+| Email | Resend |
+| Storage | Supabase Storage |
+| Validation | Zod (shared `@repo/validation` package) |
 
-```sh
-npx create-turbo@latest
+## Repository structure
+
+```
+store/
+├── apps/
+│   ├── api/          # NestJS REST API + Socket.IO gateway
+│   └── web/          # React SPA
+└── packages/
+    ├── validation/   # Shared Zod schemas
+    ├── ui/           # Shared UI components
+    ├── eslint-config/
+    └── typescript-config/
 ```
 
-## What's inside?
+## Prerequisites
 
-This Turborepo includes the following packages/apps:
+- **Node.js** ≥ 18
+- **pnpm** 9 — `npm install -g pnpm@9`
+- **MySQL** 8+ running locally (or a remote instance)
+- A **Resend** account for transactional email — [resend.com](https://resend.com)
+- A **Supabase** project for image uploads — [supabase.com](https://supabase.com)
 
-### Apps and Packages
+## Setup
 
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
+### 1. Clone and install
 
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo build
+```bash
+git clone <repo-url>
+cd store
+pnpm install
 ```
 
-Without global `turbo`, use your package manager:
+### 2. Configure the API
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm dlx turbo build
-pnpm exec turbo build
+```bash
+cp apps/api/.env.example apps/api/.env
 ```
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+Edit `apps/api/.env` and fill in every value:
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+| Variable | Description |
+|---|---|
+| `DATABASE_URL` | MySQL connection string |
+| `JWT_SECRET` | Random string ≥ 32 chars |
+| `JWT_REFRESH_SECRET` | A different random string ≥ 32 chars |
+| `RESEND_API_KEY` | From your Resend dashboard |
+| `FROM_EMAIL` | Sender address on a Resend-verified domain |
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | From Supabase → Settings → API |
+| `SUPABASE_BUCKET` | Name of the storage bucket for images |
+| `CLIENT_ORIGIN` | Frontend URL (default `http://localhost:5173`) |
+| `API_URL` | Backend URL (default `http://localhost:4000`) |
 
-```sh
-turbo build --filter=docs
+> **Resend note:** During local development you can set `FROM_EMAIL=onboarding@resend.dev`, but emails will only be delivered to your own Resend account email. To send to any address, verify a domain in Resend and use an address on that domain.
+
+### 3. Set up the database
+
+Create a MySQL database, then run migrations and seed data:
+
+```bash
+cd apps/api
+
+# Run all migrations
+pnpm db:migrate
+
+# Seed countries, cities, sample users and items
+pnpm db:seed
 ```
 
-Without global `turbo`:
+### 4. Start the dev servers
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+From the monorepo root:
+
+```bash
+pnpm dev
 ```
 
-### Develop
+This starts both servers in parallel via Turborepo:
 
-To develop all apps and packages, run the following command:
+| Service | URL |
+|---|---|
+| API | http://localhost:4000 |
+| Web | http://localhost:5173 |
+| Swagger | http://localhost:4000/api |
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Seeded accounts
 
-```sh
-cd my-turborepo
-turbo dev
+After running `pnpm db:seed`, the following test accounts are available:
+
+| Email | Password | Role |
+|---|---|---|
+| `seller@westore.dev` | `password123` | Seller |
+| `customer@westore.dev` | `password123` | Customer |
+
+> These accounts are pre-verified so you can log in immediately.
+
+## Key features
+
+- **Browse & filter** — customers see only items whose sellers deliver to their city
+- **Sell** — sellers list items with photos (uploaded to Supabase Storage) and set delivery cities
+- **Real-time chat** — Socket.IO-powered messaging between buyer and seller, with typing indicators, unread badges and message history
+- **Email verification** — new accounts require email confirmation before login
+
+## Available scripts
+
+### Root (runs across all apps)
+
+```bash
+pnpm dev          # Start all dev servers
+pnpm build        # Build all apps
+pnpm lint         # Lint all apps
+pnpm check-types  # Type-check all apps
 ```
 
-Without global `turbo`, use your package manager:
+### API (`apps/api`)
 
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
+```bash
+pnpm db:generate        # Generate a new Drizzle migration from schema changes
+pnpm db:migrate         # Apply pending migrations
+pnpm db:seed            # Seed all data (locations + users + items)
+pnpm db:seed-locations  # Seed only countries and cities
+pnpm db:seed-users      # Seed only test users
+pnpm db:seed-items      # Seed only sample listings
 ```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
